@@ -1,3 +1,5 @@
+package cmd
+
 /*
 Copyright © 2020 NAME HERE <EMAIL ADDRESS>
 
@@ -13,12 +15,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cmd
 
 import (
-  "text/template"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"text/template"
+
 	"github.com/spf13/cobra"
-  "os"
 )
 
 const listTmpl = `
@@ -29,21 +34,26 @@ const listTmpl = `
 {{end}}
 `
 
+var tasks []Task
+
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List the tasks",
-	Long: `List all the tasks (completed as well)`,
+	Long:  `List all the tasks (completed as well)`,
 	Run: func(cmd *cobra.Command, args []string) {
-    tasks := []Task {
-      { Num: 1, Name: "This is first task", Priority: "high", Date: "01/05/2020" },
-      { Num: 2, Name: "This is second task", Priority: "medium", Date: "10/05/2020" },
-      { Num: 3, Name: "This is third task", Priority: "low", Date: "21/05/2020" },
-    }
+		taskFile, err := os.Open("tasks.json")
+		defer taskFile.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
 
-    // display list of tasks
-    t := template.Must(template.New("listTmpl").Parse(listTmpl))
-    t.Execute(os.Stdout, tasks)
+		tasksByte, _ := ioutil.ReadAll(taskFile)
+		json.Unmarshal(tasksByte, &tasks)
+
+		// display list of tasks
+		t := template.Must(template.New("listTmpl").Parse(listTmpl))
+		t.Execute(os.Stdout, tasks)
 	},
 }
 

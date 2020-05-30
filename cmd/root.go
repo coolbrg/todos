@@ -1,3 +1,5 @@
+package cmd
+
 /*
 Copyright © 2020 NAME HERE <EMAIL ADDRESS>
 
@@ -13,22 +15,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
+// Task defines the structure of a task
 type Task struct {
-  Num int `json:"num"`
-  Name string `json:"name"`
-  Priority string `json:"priority"`
-  Date string `json:"date"`
+	Num      int    `json:"num"`
+	Name     string `json:"name"`
+	Priority string `json:"priority"`
+	Date     string `json:"date"`
 }
 
 var cfgFile string
@@ -37,7 +40,7 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "todos",
 	Short: "TODO CLI App",
-	Long: `A CLI app to maintain your tasks`,
+	Long:  `A CLI app to maintain your tasks`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
