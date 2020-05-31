@@ -29,6 +29,9 @@ import (
 	"github.com/spf13/viper"
 )
 
+// VERSION specify the version of the package
+const VERSION = "0.1"
+
 const listTmpl = `
 # Done   Priority          Date             		Name
 -----------------------------------------------------------------------------
@@ -87,7 +90,6 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.todos.yaml)")
 	rootCmd.PersistentFlags().StringVar(&msg, "msg", fmt.Sprintf("******* Have a nice day '%s' *******", viper.GetString("username")), "a welcome message")
-
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
