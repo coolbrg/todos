@@ -18,6 +18,7 @@ limitations under the License.
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -48,12 +49,13 @@ var newCmd = &cobra.Command{
 			fmt.Printf("Task #%d added successfully.\n", newTaskNum)
 		} else {
 			fmt.Println("Task entry is empty.")
+			os.Exit(1)
 		}
 	},
 }
 
 func init() {
-	newCmd.Flags().StringP("task", "a", "", "Add new task (format: 'DD/MM/YYYY,high|medium|low,Task name)'")
+	newCmd.Flags().StringP("task", "t", "", "Add new task (format: 'DD/MM/YYYY,high|medium|low,Task name)'")
 	viper.BindPFlag("task", newCmd.Flags().Lookup("task"))
 	rootCmd.AddCommand(newCmd)
 }

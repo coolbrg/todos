@@ -18,6 +18,7 @@ limitations under the License.
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -44,15 +45,16 @@ var removeCmd = &cobra.Command{
 			if err := updateTasks(newTasks); err != nil {
 				fmt.Println(err)
 			}
-			fmt.Printf("Task #%d added successfully.\n", taskNum)
+			fmt.Printf("Task #%d removed successfully.\n", taskNum)
 		} else {
 			fmt.Println("Need to specify task number to remove any task.")
+			os.Exit(1)
 		}
 	},
 }
 
 func init() {
-	removeCmd.Flags().StringP("task-num", "r", "", "Remove a task by specifying its number")
+	removeCmd.Flags().StringP("task-num", "n", "", "Remove a task by specifying its number")
 	viper.BindPFlag("task-num", removeCmd.Flags().Lookup("task-num"))
 	rootCmd.AddCommand(removeCmd)
 }
