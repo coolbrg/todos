@@ -17,8 +17,11 @@ limitations under the License.
 */
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"text/template"
 
 	"github.com/spf13/cobra"
 
@@ -26,15 +29,34 @@ import (
 	"github.com/spf13/viper"
 )
 
+const listTmpl = `
+# Done   Priority          Date             		Name
+-----------------------------------------------------------------------------
+{{ range $val := . }}
+{{$val.Num}} {{$val.Done}}   {{$val.Priority}}          {{$val.Date}}             {{$val.Name}}
+{{end}}
+`
+const incompleteListTmpl = `
+#   Priority          Date             Name
+------------------------------------------------------------
+{{ range $val := . }}
+{{$val.Num}}   {{$val.Priority}}          {{$val.Date}}             {{$val.Name}}
+{{end}}
+`
+
 // Task defines the structure of a task
 type Task struct {
 	Num      int    `json:"num"`
+	Done     bool   `json:"done"`
 	Name     string `json:"name"`
 	Priority string `json:"priority"`
 	Date     string `json:"date"`
 }
 
-var cfgFile string
+var (
+	cfgFile string
+	msg     string
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -50,6 +72,9 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	if msg != "" {
+		fmt.Println(msg)
+	}
 }
 
 func init() {
@@ -60,6 +85,7 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.todos.yaml)")
+	rootCmd.PersistentFlags().StringVar(&msg, "msg", "******* Welcome to TODOs *******", "a welcome message")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -74,6 +100,7 @@ func initConfig() {
 	} else {
 		// Find home directory.
 		home, err := homedir.Dir()
+
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -90,4 +117,34 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func lastTaskNum() int {
+	return allTasks()[0].Num
+}
+
+func allTasks() []Task {
+	taskFile, err := os.Open("tasks.json")
+	defer taskFile.Close()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	tasksByte, _ := ioutil.ReadAll(taskFile)
+	json.Unmarshal(tasksByte, &tasks)
+	return tasks
+}
+
+func updateTasks(tasks []Task) error {
+	tasksJSON, _ := json.MarshalIndent(tasks, "", "\t")
+	err := ioutil.WriteFile("tasks.json", tasksJSON, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func showTasks(tasks []Task) {
+	t := template.Must(template.New("listTmpl").Parse(listTmpl))
+	t.Execute(os.Stdout, tasks)
 }

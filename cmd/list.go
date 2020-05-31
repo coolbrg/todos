@@ -17,24 +17,15 @@ limitations under the License.
 */
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"os"
-	"text/template"
+	flag "github.com/spf13/pflag"
 
 	"github.com/spf13/cobra"
 )
 
-const listTmpl = `
-#   Priority          Date             Name
-------------------------------------------------------------
-{{ range $val := . }}
-{{$val.Num}}   {{$val.Priority}}          {{$val.Date}}             {{$val.Name}}
-{{end}}
-`
-
-var tasks []Task
+var (
+	tasks    []Task
+	skipDone bool
+)
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
@@ -42,22 +33,35 @@ var listCmd = &cobra.Command{
 	Short: "List the tasks",
 	Long:  `List all the tasks (completed as well)`,
 	Run: func(cmd *cobra.Command, args []string) {
-		taskFile, err := os.Open("tasks.json")
-		defer taskFile.Close()
-		if err != nil {
-			fmt.Println(err)
+		if !skipDone {
+			showTasks(allTasks())
+		} else {
+			// fetch incomplete tasks
+			var incompleteTasks []Task
+			for _, task := range allTasks() {
+				if !task.Done {
+					incompleteTasks = append(incompleteTasks, task)
+				}
+			}
+
+			showTasks(incompleteTasks)
 		}
-
-		tasksByte, _ := ioutil.ReadAll(taskFile)
-		json.Unmarshal(tasksByte, &tasks)
-
-		// display list of tasks
-		t := template.Must(template.New("listTmpl").Parse(listTmpl))
-		t.Execute(os.Stdout, tasks)
 	},
 }
 
+var (
+	skipDoneFlag = &flag.Flag{
+		Name:      "skip-done",
+		Shorthand: "s",
+		Usage:     "Skip the completed tasks",
+	}
+)
+
 func init() {
+	// listCmd.Flags().AddFlag(skipDoneFlag)
+	// viper.BindPFlags(listCmd.Flags())
+
+	listCmd.Flags().BoolVarP(&skipDone, "skip-done", "s", false, "Skip the completed tasks")
 	rootCmd.AddCommand(listCmd)
 
 	// Here you will define your flags and configuration settings.
