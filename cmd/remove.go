@@ -18,42 +18,41 @@ limitations under the License.
 
 import (
 	"fmt"
-	"strings"
+	"strconv"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-// newCmd represents the new command
-var newCmd = &cobra.Command{
-	Use:   "new",
-	Short: "Add a new task",
-	Long:  `Add a new task to the existing list of tasks`,
+// removeCmd represents the remove command
+var removeCmd = &cobra.Command{
+	Use:   "remove",
+	Short: "Remove a task",
+	Long:  `Remove the task from the list`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if viper.GetString("task") != "" {
-			taskInfo := strings.Split(viper.GetString("task"), ",")
-			tasks := allTasks()
-			newTaskNum := lastTaskNum() + 1
-			newTasks := []Task{
-				{Num: newTaskNum, Done: false, Date: taskInfo[0], Priority: taskInfo[1], Name: taskInfo[2]},
-			}
+		var newTasks []Task
 
+		if viper.GetString("task-num") != "" {
+			tasks := allTasks()
+			taskNum, _ := strconv.ParseInt(viper.GetString("task-num"), 10, 64)
 			for _, task := range tasks {
-				newTasks = append(newTasks, task)
+				if int64(task.Num) != taskNum {
+					newTasks = append(newTasks, task)
+				}
 			}
 
 			if err := updateTasks(newTasks); err != nil {
 				fmt.Println(err)
 			}
-			fmt.Printf("Task #%d added successfully.\n", newTaskNum)
+			fmt.Printf("Task #%d added successfully.\n", taskNum)
 		} else {
-			fmt.Println("Task entry is empty.")
+			fmt.Println("Need to specify task number to remove any task.")
 		}
 	},
 }
 
 func init() {
-	newCmd.Flags().StringP("task", "a", "", "Add new task (format: 'DD/MM/YYYY,high|medium|low,Task name)'")
-	viper.BindPFlag("task", newCmd.Flags().Lookup("task"))
-	rootCmd.AddCommand(newCmd)
+	removeCmd.Flags().StringP("task-num", "r", "", "Remove a task by specifying its number")
+	viper.BindPFlag("task-num", removeCmd.Flags().Lookup("task-num"))
+	rootCmd.AddCommand(removeCmd)
 }
