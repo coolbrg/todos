@@ -83,9 +83,10 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
+	viper.BindEnv("username")
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.todos.yaml)")
-	rootCmd.PersistentFlags().StringVar(&msg, "msg", "******* Welcome to TODOs *******", "a welcome message")
+	rootCmd.PersistentFlags().StringVar(&msg, "msg", fmt.Sprintf("******* Have a nice day '%s' *******", viper.GetString("username")), "a welcome message")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
